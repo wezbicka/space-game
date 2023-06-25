@@ -1,4 +1,5 @@
 import time
+import random
 import asyncio
 
 import curses
@@ -8,19 +9,28 @@ TIC_TIMEOUT = 0.1
 
 
 def draw(canvas):
+    symbols = '+*.:'
     canvas.border()
-    coroutines = [blink(canvas, 5, number * 5) for number in range(1, 6)]
+    window_y, window_x = canvas.getmaxyx()
+    coroutines = []
+    for i in range(100):
+        coroutines.append(blink(
+            canvas,
+            random.randint(1, window_y-5),
+            random.randint(1, window_x-5),
+            random.choice(symbols),
+        ))
     while True:
         for coroutine in coroutines.copy():
+            curses.curs_set(False)
             try:
                 coroutine.send(None)
+                curses.curs_set(False)
             except StopIteration:
                 coroutines.remove(coroutine)
             canvas.refresh()
-        if len(coroutines) == 0:
-            break
         time.sleep(TIC_TIMEOUT)
-    time.sleep(2)
+    # time.sleep(2)
 
   
 async def blink(canvas, row, column, symbol='*'):
