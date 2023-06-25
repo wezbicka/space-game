@@ -4,6 +4,8 @@ import asyncio
 
 import curses
 
+import fire_animation
+
 
 TIC_TIMEOUT = 0.1
 
@@ -22,6 +24,12 @@ def draw(canvas):
             random.randint(0, 3),
             random.choice(symbols),
         ))
+    fire_corutine = fire_animation.fire(
+        canvas,
+        window_y//2,
+        window_x//2,
+    )
+    coroutines.append(fire_corutine)
     while True:
         for coroutine in coroutines.copy():
             try:
