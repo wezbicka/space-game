@@ -9,7 +9,8 @@ TIC_TIMEOUT = 0.1
 
 
 def draw(canvas):
-    symbols = '+*.:'
+    symbols = "*.○+●°•☆:☼★٭✽❇❈❉❊❋⁂"
+    curses.curs_set(False)
     canvas.border()
     window_y, window_x = canvas.getmaxyx()
     coroutines = []
@@ -18,37 +19,38 @@ def draw(canvas):
             canvas,
             random.randint(1, window_y-5),
             random.randint(1, window_x-5),
+            random.randint(0, 3),
             random.choice(symbols),
         ))
     while True:
         for coroutine in coroutines.copy():
-            curses.curs_set(False)
             try:
                 coroutine.send(None)
-                curses.curs_set(False)
             except StopIteration:
                 coroutines.remove(coroutine)
-            canvas.refresh()
+        canvas.refresh()
         time.sleep(TIC_TIMEOUT)
-    # time.sleep(2)
 
-  
-async def blink(canvas, row, column, symbol='*'):
+
+async def blink(canvas, row, column, seconds, symbol='*'):
     while True:
+        for _ in range(seconds):
+            await asyncio.sleep(0)
+
         canvas.addstr(row, column, symbol, curses.A_DIM)
-        for i in range(20):
+        for _ in range(20):
             await asyncio.sleep(0)
 
         canvas.addstr(row, column, symbol)
-        for i in range(3):
+        for _ in range(3):
             await asyncio.sleep(0)
 
         canvas.addstr(row, column, symbol, curses.A_BOLD)
-        for i in range(5):
+        for _ in range(5):
             await asyncio.sleep(0)
 
         canvas.addstr(row, column, symbol)
-        for i in range(3):
+        for _ in range(3):
             await asyncio.sleep(0)
 
 
