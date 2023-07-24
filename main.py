@@ -2,9 +2,16 @@ import time
 import random
 import asyncio
 
+import time
+import random
+import asyncio
+import os
+
 import curses
+from itertools import cycle
 
 import fire_animation
+from curses_tools import draw_frame
 
 
 TIC_TIMEOUT = 0.1
@@ -16,6 +23,8 @@ def draw(canvas):
     canvas.border()
     window_y, window_x = canvas.getmaxyx()
     coroutines = []
+    coroutines.append(animate_spaceship(canvas, window_y//2, window_x//2))
+
     for i in range(100):
         coroutines.append(blink(
             canvas,
@@ -24,6 +33,7 @@ def draw(canvas):
             random.randint(0, 3),
             random.choice(symbols),
         ))
+    
     fire_corutine = fire_animation.fire(
         canvas,
         window_y//2,
@@ -38,6 +48,23 @@ def draw(canvas):
                 coroutines.remove(coroutine)
         canvas.refresh()
         time.sleep(TIC_TIMEOUT)
+
+
+async def animate_spaceship(canvas, row, column):
+    folder = "spaceship"
+    with open(os.path.join(folder, "rocket_frame_1.txt"), "r") as content:
+        frame1 = content.read()
+    with open(os.path.join(folder, "rocket_frame_2.txt"), "r") as content:
+        frame2 = content.read()
+    frames = [frame1, frame2]
+    for frame in cycle(frames):
+        draw_frame(canvas, row, column, frame)
+        canvas.refresh()
+
+        await asyncio.sleep(0)
+
+        # стираем предыдущий кадр, прежде чем рисовать новый
+        draw_frame(canvas, row, column, frame, negative=True)
 
 
 async def blink(canvas, row, column, seconds, symbol='*'):
