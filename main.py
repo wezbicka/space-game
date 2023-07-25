@@ -1,29 +1,33 @@
 import time
 import random
 import asyncio
-
-import time
-import random
-import asyncio
 import os
 
 import curses
 from itertools import cycle
 
 import fire_animation
-from curses_tools import draw_frame
+from curses_tools import draw_frame, read_controls
 
 
 TIC_TIMEOUT = 0.1
 
 
 def draw(canvas):
+    
+    folder = "spaceship"
+    with open(os.path.join(folder, "rocket_frame_1.txt"), "r") as content:
+        frame1 = content.read()
+    with open(os.path.join(folder, "rocket_frame_2.txt"), "r") as content:
+        frame2 = content.read()
+    frames = [frame1, frame2]
+  
     symbols = "*.○+●°•☆:☼★٭✽❇❈❉❊❋⁂"
     curses.curs_set(False)
     canvas.border()
     window_y, window_x = canvas.getmaxyx()
     coroutines = []
-    coroutines.append(animate_spaceship(canvas, window_y//2, window_x//2))
+    coroutines.append(animate_spaceship(canvas, window_y//2, window_x//2, frames))
 
     for i in range(100):
         coroutines.append(blink(
@@ -50,14 +54,12 @@ def draw(canvas):
         time.sleep(TIC_TIMEOUT)
 
 
-async def animate_spaceship(canvas, row, column):
-    folder = "spaceship"
-    with open(os.path.join(folder, "rocket_frame_1.txt"), "r") as content:
-        frame1 = content.read()
-    with open(os.path.join(folder, "rocket_frame_2.txt"), "r") as content:
-        frame2 = content.read()
-    frames = [frame1, frame2]
+async def animate_spaceship(canvas, row, column, frames):
+    canvas.nodelay(True)
     for frame in cycle(frames):
+        rows_direction, columns_direction, _ = read_controls(canvas)
+        row += rows_direction
+        column += columns_direction
         draw_frame(canvas, row, column, frame)
         canvas.refresh()
 
