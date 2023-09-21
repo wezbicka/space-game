@@ -23,6 +23,7 @@ def get_frames(folder="spaceship"):
             frames.append(file.read())
     return frames
 
+
 def draw(canvas):
     canvas.nodelay(True)
     symbols = "*.○+●°•☆:☼★٭✽❇❈❉❊❋⁂"
