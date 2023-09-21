@@ -2,31 +2,35 @@ import time
 import random
 import asyncio
 import os
+import statistics
 
 import curses
 from itertools import cycle
 
 import fire_animation
-from curses_tools import draw_frame, read_controls
+from curses_tools import draw_frame, \
+    read_controls, get_frame_size
 
 
 TIC_TIMEOUT = 0.1
 
 
+def get_frames(folder="spaceship"):
+    frames = []
+    for filename in os.listdir(folder):
+        filepath = os.path.join(folder, filename)
+        with open(filepath, 'r') as file:
+            frames.append(file.read())
+    return frames
+
 def draw(canvas):
-    
-    folder = "spaceship"
-    with open(os.path.join(folder, "rocket_frame_1.txt"), "r") as content:
-        frame1 = content.read()
-    with open(os.path.join(folder, "rocket_frame_2.txt"), "r") as content:
-        frame2 = content.read()
-    frames = [frame1, frame2]
-  
+    canvas.nodelay(True)
     symbols = "*.○+●°•☆:☼★٭✽❇❈❉❊❋⁂"
     curses.curs_set(False)
     canvas.border()
     window_y, window_x = canvas.getmaxyx()
     coroutines = []
+    frames = get_frames()
     coroutines.append(animate_spaceship(canvas, window_y//2, window_x//2, frames))
 
     for i in range(100):
@@ -38,12 +42,12 @@ def draw(canvas):
             random.choice(symbols),
         ))
     
-    fire_corutine = fire_animation.fire(
+    fire_coroutine = fire_animation.fire(
         canvas,
         window_y//2,
         window_x//2,
     )
-    coroutines.append(fire_corutine)
+    coroutines.append(fire_coroutine)
     while True:
         for coroutine in coroutines.copy():
             try:
@@ -56,15 +60,22 @@ def draw(canvas):
 
 async def animate_spaceship(canvas, row, column, frames):
     canvas.nodelay(True)
+    screen_max_y, screen_max_x = canvas.getmaxyx()
     for frame in cycle(frames):
-        rows_direction, columns_direction, _ = read_controls(canvas)
-        row += rows_direction
-        column += columns_direction
+        height, width = get_frame_size(frame) 
+        frame_max_row, frame_max_column = screen_max_y - height, screen_max_x - width
+        
+        x_direction, y_direction, space_pressed = read_controls(canvas)
+        
+        row += x_direction
+        column += y_direction
+
+        row = statistics.median([1, row, frame_max_row - 1])
+        column = statistics.median([1, column, frame_max_column - 1])
+      
         draw_frame(canvas, row, column, frame)
         canvas.refresh()
-
         await asyncio.sleep(0)
-
         # стираем предыдущий кадр, прежде чем рисовать новый
         draw_frame(canvas, row, column, frame, negative=True)
 

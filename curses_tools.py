@@ -1,3 +1,6 @@
+import os
+import time
+
 SPACE_KEY_CODE = 32
 LEFT_KEY_CODE = 260
 RIGHT_KEY_CODE = 261
@@ -40,7 +43,7 @@ def draw_frame(canvas, start_row, start_column, text, negative=False):
     """Draw multiline text fragment on canvas, erase text instead of drawing if negative=True is specified."""
 
     rows_number, columns_number = canvas.getmaxyx()
-
+  
     for row, line in enumerate(text.splitlines(), round(start_row)):
         if row < 0:
             continue
