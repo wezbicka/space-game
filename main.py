@@ -63,22 +63,23 @@ async def animate_spaceship(canvas, row, column, frames):
     canvas.nodelay(True)
     screen_max_y, screen_max_x = canvas.getmaxyx()
     for frame in cycle(frames):
-        height, width = get_frame_size(frame) 
-        frame_max_row, frame_max_column = screen_max_y - height, screen_max_x - width
-        
-        x_direction, y_direction, space_pressed = read_controls(canvas)
-        
-        row += x_direction
-        column += y_direction
+        for i in range(2):
+            height, width = get_frame_size(frame) 
+            frame_max_row, frame_max_column = screen_max_y - height, screen_max_x - width
+            
+            x_direction, y_direction, space_pressed = read_controls(canvas)
+            
+            row += x_direction
+            column += y_direction
 
-        row = statistics.median([1, row, frame_max_row - 1])
-        column = statistics.median([1, column, frame_max_column - 1])
-      
-        draw_frame(canvas, row, column, frame)
-        canvas.refresh()
-        await asyncio.sleep(0)
-        # стираем предыдущий кадр, прежде чем рисовать новый
-        draw_frame(canvas, row, column, frame, negative=True)
+            row = statistics.median([1, row, frame_max_row - 1])
+            column = statistics.median([1, column, frame_max_column - 1])
+        
+            draw_frame(canvas, row, column, frame)
+            canvas.refresh()
+            await asyncio.sleep(0)
+            # стираем предыдущий кадр, прежде чем рисовать новый
+            draw_frame(canvas, row, column, frame, negative=True)
 
 
 async def blink(canvas, row, column, seconds, symbol='*'):
